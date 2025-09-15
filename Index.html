@@ -1,0 +1,642 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Hotel PMS — Demo (HTML5 + JS)</title>
+<link rel="icon" href="data:;base64,iVBORw0KGgo=">
+<style>
+  :root{
+    --bg:#0f1724; --card:#0b1220; --muted:#9aa6b2;
+    --accent:#00bcd4; --accent-2:#7c3aed; --good:#16a34a; --bad:#ef4444;
+    --glass: rgba(255,255,255,0.03);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    color-scheme: dark;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;background:
+    linear-gradient(180deg, rgba(7,11,20,1) 0%, rgba(10,13,20,1) 100%);
+    color:#e6eef6;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}
+  .app{max-width:1200px;margin:28px auto;padding:20px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));box-shadow:0 8px 40px rgba(2,6,23,0.6);}
+  header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+  header h1{font-size:20px;margin:0}
+  header .brand-sub{color:var(--muted);font-size:13px}
+  .grid{display:grid;grid-template-columns: 320px 1fr;gap:18px}
+  /* left pane */
+  .panel{background:var(--card);padding:14px;border-radius:10px}
+  .panel h3{margin:0 0 10px 0;font-size:15px}
+  .btn{background:linear-gradient(90deg,var(--accent),var(--accent-2));border:none;color:#001217;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:600}
+  .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+  .small{font-size:13px;padding:6px 8px;border-radius:8px}
+  .muted{color:var(--muted)}
+  .rooms-list{display:grid;gap:8px;margin-top:8px}
+  .room-card{display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));border:1px solid rgba(255,255,255,0.02)}
+  .room-meta{flex:1}
+  .pill{padding:4px 8px;border-radius:999px;font-weight:600;font-size:12px}
+  .pill.available{background:rgba(16,185,129,0.12);color:var(--good);border:1px solid rgba(16,185,129,0.12)}
+  .pill.occupied{background:rgba(239,68,68,0.12);color:var(--bad);border:1px solid rgba(239,68,68,0.12)}
+  .form-row{display:flex;gap:8px;margin-bottom:8px}
+  input,select,textarea{background:transparent;border:1px solid rgba(255,255,255,0.06);color:inherit;padding:8px;border-radius:8px;outline:none}
+  label{font-size:13px;color:var(--muted);display:block;margin-bottom:6px}
+  .controls{display:flex;gap:8px;flex-wrap:wrap}
+  /* right pane */
+  .dashboard{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px}
+  .stat{background:var(--glass);padding:12px;border-radius:10px;text-align:center}
+  .stat h4{margin:6px 0 0 0;font-size:16px}
+  .stat p{margin:0;color:var(--muted);font-size:13px}
+  .table{background:var(--card);padding:12px;border-radius:10px;overflow:auto}
+  table{width:100%;border-collapse:collapse}
+  th,td{padding:8px;text-align:left;border-bottom:1px dashed rgba(255,255,255,0.03);font-size:14px}
+  th{color:var(--muted);font-size:13px}
+  .actions{display:flex;gap:6px}
+  .chip{padding:6px 8px;border-radius:8px;background:rgba(255,255,255,0.02);font-size:13px}
+  footer{margin-top:14px;color:var(--muted);font-size:13px;text-align:center}
+  /* responsive */
+  @media (max-width:900px){.grid{grid-template-columns:1fr;}.dashboard{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:560px){.dashboard{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <header>
+    <div>
+      <h1>Hotel PMS — Demo</h1>
+      <div class="brand-sub">Rooms, Reservations & Guests • Client-side demo</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn" id="seedBtn">Seed demo data</button>
+      <button class="btn secondary" id="exportBtn">Export JSON</button>
+      <input id="importFile" type="file" accept="application/json" style="display:none"/>
+      <button class="btn secondary" id="importBtn">Import JSON</button>
+    </div>
+  </header>
+
+  <div class="grid">
+    <!-- LEFT: Controls -->
+    <div>
+      <div class="panel" style="margin-bottom:12px">
+        <h3>Quick actions</h3>
+        <div class="controls">
+          <button class="btn small" id="openRoomEditor">+ Add room</button>
+          <button class="btn small" id="openReservation">+ New reservation</button>
+          <button class="btn small" id="openGuest">+ Add guest</button>
+          <button class="btn small secondary" id="clearData">Reset demo</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Search / Filters</h3>
+        <div style="display:grid;gap:8px">
+          <div>
+            <label>Text search (guest, id, room)</label>
+            <input id="q" placeholder="Search... e.g. 'John' or '101'"/>
+          </div>
+          <div class="form-row">
+            <div style="flex:1">
+              <label>From</label>
+              <input id="fromDate" type="date"/>
+            </div>
+            <div style="flex:1">
+              <label>To</label>
+              <input id="toDate" type="date"/>
+            </div>
+          </div>
+          <div>
+            <label>Status</label>
+            <select id="statusFilter">
+              <option value="">Any</option>
+              <option value="reserved">Reserved</option>
+              <option value="checked-in">Checked-in</option>
+              <option value="checked-out">Checked-out</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:6px">
+            <button class="btn small" id="applyFilters">Apply</button>
+            <button class="btn small secondary" id="resetFilters">Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top:12px">
+        <h3>Rooms</h3>
+        <div class="rooms-list" id="roomsList"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Dashboard & Reservations -->
+    <div>
+      <div class="dashboard">
+        <div class="stat">
+          <div style="font-size:22px;font-weight:800" id="statRooms">0</div>
+          <h4>Rooms total</h4>
+          <p class="muted">Configured rooms</p>
+        </div>
+        <div class="stat">
+          <div style="font-size:22px;font-weight:800" id="statOccupancy">0</div>
+          <h4>Currently occupied</h4>
+          <p class="muted">Checked-in now</p>
+        </div>
+        <div class="stat">
+          <div style="font-size:22px;font-weight:800" id="statRevenue">£0</div>
+          <h4>Outstanding revenue</h4>
+          <p class="muted">Total unpaid for active stays</p>
+        </div>
+      </div>
+
+      <div class="table" style="margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <h3 style="margin:0">Reservations</h3>
+          <div class="muted">Double-click reservation row to edit</div>
+        </div>
+
+        <table id="reservationsTable">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Room</th>
+              <th>Guest</th>
+              <th>From → To</th>
+              <th>Price</th>
+              <th>Status</th>
+              <th>Paid</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="table">
+        <h3 style="margin-top:0">Guests</h3>
+        <table id="guestsTable">
+          <thead>
+            <tr><th>ID</th><th>Name</th><th>Phone/Email</th><th>Notes</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <footer>Demo PMS • local-only • uses localStorage • built with HTML5/JS</footer>
+    </div>
+  </div>
+</div>
+
+<!-- MODALS (simple) -->
+<div id="modalRoot" style="position:fixed;left:0;top:0;width:100%;height:100%;display:none;align-items:center;justify-content:center;z-index:9999">
+  <div id="modalOverlay" style="position:absolute;inset:0;background:rgba(2,6,23,0.7)"></div>
+  <div id="modalContent" style="position:relative;z-index:1;width:720px;max-width:95%;border-radius:12px;overflow:hidden"></div>
+</div>
+
+<script>
+/*
+  Hotel PMS Demo (single-file)
+  - Data stored in localStorage keys: h_pms_rooms, h_pms_reservations, h_pms_guests
+  - All core functions implemented
+*/
+
+const LS_KEYS = {rooms:'h_pms_rooms', res:'h_pms_reservations', guests:'h_pms_guests'};
+const app = document.getElementById('app');
+const modalRoot = document.getElementById('modalRoot');
+const modalContent = document.getElementById('modalContent');
+
+function uid(prefix='id'){return prefix + '_' + Math.random().toString(36).slice(2,9)}
+
+// ---- Persistence helpers
+function read(key){
+  try{
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch(e){return null}
+}
+function write(key, v){ localStorage.setItem(key, JSON.stringify(v)); }
+
+// ---- Data models with defaults
+function getRooms(){ return read(LS_KEYS.rooms) || [] }
+function getReservations(){ return read(LS_KEYS.res) || [] }
+function getGuests(){ return read(LS_KEYS.guests) || [] }
+
+function saveRooms(list){ write(LS_KEYS.rooms, list); renderRooms(); renderStats(); }
+function saveReservations(list){ write(LS_KEYS.res, list); renderReservations(); renderStats(); }
+function saveGuests(list){ write(LS_KEYS.guests, list); renderGuests(); renderRooms(); renderStats(); }
+
+// ---- Demo seed
+function seedDemo(){
+  const rooms = [
+    {id:'101', type:'Single', rate:60, floor:1, features:['Ensuite','Free WiFi']},
+    {id:'102', type:'Double', rate:90, floor:1, features:['Ensuite','Sea view']},
+    {id:'201', type:'Suite', rate:180, floor:2, features:['Balcony','King bed']},
+    {id:'202', type:'Double', rate:95, floor:2, features:['Ensuite']},
+  ];
+  const guests = [
+    {id:uid('g'), name:'John Doe', phone:'+44 7700 900123', email:'john@example.com', notes:''},
+    {id:uid('g'), name:'Mary Adams', phone:'+44 7700 900124', email:'mary@example.com', notes:'VIP'},
+  ];
+  const today = new Date();
+  const addDays = (d,n)=>{ const x=new Date(d); x.setDate(x.getDate()+n); return x.toISOString().slice(0,10) }
+  const res = [
+    {id:uid('r'), roomId:'101', guestId:guests[0].id, from:addDays(today,0), to:addDays(today,2), price:120, status:'checked-in', paid:false, notes:''},
+    {id:uid('r'), roomId:'102', guestId:guests[1].id, from:addDays(today,3), to:addDays(today,5), price:180, status:'reserved', paid:false, notes:''},
+  ];
+  saveRooms(rooms); saveGuests(guests); saveReservations(res);
+  alert('Demo data seeded!');
+}
+
+// ---- UI helpers: modal
+function openModal(html){
+  modalContent.innerHTML = html;
+  modalRoot.style.display = 'flex';
+}
+function closeModal(){ modalRoot.style.display = 'none'; modalContent.innerHTML = ''; }
+
+// Close when clicking overlay
+document.getElementById('modalOverlay').addEventListener('click', closeModal);
+
+// ---- Render: Rooms list
+function renderRooms(){
+  const list = getRooms();
+  const container = document.getElementById('roomsList');
+  container.innerHTML = '';
+  const reservations = getReservations();
+  for(const r of list){
+    // determine occupancy by checking reservations with overlapping dates and checked-in
+    const today = new Date().toISOString().slice(0,10);
+    const occupied = reservations.some(resv => resv.roomId === r.id && resv.status === 'checked-in');
+    const el = document.createElement('div');
+    el.className = 'room-card';
+    el.innerHTML = `
+      <div style="width:10px;height:40px;border-radius:6px;background:linear-gradient(180deg,var(--accent),var(--accent-2))"></div>
+      <div class="room-meta">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-weight:700">${r.id} — ${r.type}</div>
+            <div class="muted" style="font-size:13px;margin-top:4px">Floor ${r.floor} • £${r.rate}/night</div>
+          </div>
+          <div style="text-align:right">
+            <div class="pill ${occupied ? 'occupied' : 'available'}">${occupied ? 'Occupied' : 'Available'}</div>
+          </div>
+        </div>
+      </div>
+    `;
+    el.addEventListener('dblclick', ()=> openRoomEditor(r));
+    container.appendChild(el);
+  }
+}
+
+// ---- Render: Reservations
+function renderReservations(filters={}) {
+  const rows = getReservations();
+  const tbody = document.querySelector('#reservationsTable tbody');
+  tbody.innerHTML = '';
+  const rooms = getRooms(), guests=getGuests();
+  let filtered = rows.slice();
+
+  // apply search filters from controls if provided
+  if(filters.q){
+    const q = filters.q.toLowerCase();
+    filtered = filtered.filter(r=>{
+      const room = rooms.find(x=>x.id===r.roomId) || {};
+      const guest = guests.find(x=>x.id===r.guestId) || {};
+      return (r.id && r.id.toLowerCase().includes(q)) ||
+             (room.id && room.id.toLowerCase().includes(q)) ||
+             (guest.name && guest.name.toLowerCase().includes(q))
+    })
+  }
+  if(filters.status){ filtered = filtered.filter(r=>r.status===filters.status) }
+  if(filters.from){
+    filtered = filtered.filter(r=> r.to >= filters.from && r.from <= (filters.to || r.to) )
+  }
+  // sort by from date desc
+  filtered.sort((a,b)=> a.from < b.from ? 1 : -1);
+
+  for(const r of filtered){
+    const room = rooms.find(x=>x.id===r.roomId) || {id:r.roomId};
+    const guest = guests.find(x=>x.id===r.guestId) || {name:'Unknown'};
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${r.id}</td>
+      <td>${room.id} <div class="muted" style="font-size:12px">${room.type || ''}</div></td>
+      <td>${guest.name}</td>
+      <td>${r.from} → ${r.to}</td>
+      <td>£${r.price}</td>
+      <td><span class="chip">${r.status}</span></td>
+      <td>${r.paid ? '£'+r.price : '<span style="color:var(--muted)">Unpaid</span>'}</td>
+      <td class="actions">
+        <button class="small btn" data-act="checkin">Check-in</button>
+        <button class="small secondary" data-act="edit">Edit</button>
+        <button class="small secondary" data-act="cancel">Cancel</button>
+      </td>
+    `;
+    // double-click row to edit
+    tr.addEventListener('dblclick', ()=> openReservationEditor(r));
+    // buttons
+    tr.querySelectorAll('button').forEach(btn=>{
+      btn.addEventListener('click',(e)=>{
+        const act = btn.dataset.act;
+        if(act==='checkin') handleCheckIn(r.id);
+        if(act==='edit') openReservationEditor(r);
+        if(act==='cancel') handleCancel(r.id);
+      })
+    });
+    tbody.appendChild(tr);
+  }
+}
+
+// ---- Render: Guests
+function renderGuests(){
+  const list = getGuests();
+  const tbody = document.querySelector('#guestsTable tbody');
+  tbody.innerHTML = '';
+  for(const g of list){
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${g.id}</td><td>${g.name}</td><td>${g.phone || ''} ${g.email ? '• '+g.email : ''}</td><td>${g.notes || ''}</td>`;
+    tbody.appendChild(tr);
+  }
+}
+
+// ---- Stats
+function renderStats(){
+  const rooms = getRooms();
+  const res = getReservations();
+  const guests = getGuests();
+  const totalRooms = rooms.length;
+  const occupied = res.filter(r=>r.status === 'checked-in').length;
+  const rev = res.filter(r=> r.status === 'checked-in' && !r.paid).reduce((s,x)=>s+x.price,0);
+  document.getElementById('statRooms').textContent = totalRooms;
+  document.getElementById('statOccupancy').textContent = occupied;
+  document.getElementById('statRevenue').textContent = '£' + rev;
+}
+
+// ---- Actions: Add / Edit Room
+function openRoomEditor(room){
+  const isEdit = !!room;
+  openModal(`
+    <div style="background:var(--card);padding:18px;border-radius:12px;">
+      <h3>${isEdit ? 'Edit' : 'Add'} room</h3>
+      <div style="display:grid;gap:8px;margin-top:8px">
+        <div><label>Room ID</label><input id="room_id" value="${room ? escapeHtml(room.id) : ''}" ${isEdit ? 'readonly' : ''}></div>
+        <div><label>Type</label><input id="room_type" value="${room ? escapeHtml(room.type) : ''}"></div>
+        <div style="display:flex;gap:8px"><div style="flex:1"><label>Floor</label><input id="room_floor" value="${room ? escapeHtml(room.floor) : ''}"></div><div style="flex:1"><label>Rate (£/night)</label><input id="room_rate" type="number" value="${room ? escapeHtml(room.rate) : 0}"></div></div>
+        <div><label>Features (comma separated)</label><input id="room_features" value="${room ? escapeHtml((room.features||[]).join(', ')) : ''}"></div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px">
+          <button class="btn secondary" id="roomCancel">Cancel</button>
+          <button class="btn" id="roomSave">Save</button>
+        </div>
+      </div>
+    </div>
+  `);
+  document.getElementById('roomCancel').onclick = closeModal;
+  document.getElementById('roomSave').onclick = ()=>{
+    const id = document.getElementById('room_id').value.trim();
+    const type = document.getElementById('room_type').value.trim() || 'Standard';
+    const floor = document.getElementById('room_floor').value.trim() || '1';
+    const rate = Number(document.getElementById('room_rate').value) || 0;
+    const features = document.getElementById('room_features').value.split(',').map(s=>s.trim()).filter(Boolean);
+    if(!id){ return alert('Room ID required') }
+    const rooms = getRooms();
+    const exists = rooms.find(r=>r.id===id);
+    if(exists && !isEdit) return alert('Room ID already exists');
+    if(isEdit){
+      Object.assign(exists, {type,floor,rate,features});
+      saveRooms(rooms);
+    } else {
+      rooms.push({id,type,rate,floor,features});
+      saveRooms(rooms);
+    }
+    closeModal();
+  }
+}
+
+// ---- Actions: Guests
+function openGuestEditor(g){
+  const isEdit = !!g;
+  openModal(`
+    <div style="background:var(--card);padding:18px;border-radius:12px;">
+      <h3>${isEdit ? 'Edit' : 'Add'} guest</h3>
+      <div style="display:grid;gap:8px;margin-top:8px">
+        <div><label>Name</label><input id="guest_name" value="${g ? escapeHtml(g.name) : ''}"></div>
+        <div style="display:flex;gap:8px"><div style="flex:1"><label>Phone</label><input id="guest_phone" value="${g ? escapeHtml(g.phone) : ''}"></div><div style="flex:1"><label>Email</label><input id="guest_email" value="${g ? escapeHtml(g.email) : ''}"></div></div>
+        <div><label>Notes</label><textarea id="guest_notes" rows="3">${g ? escapeHtml(g.notes) : ''}</textarea></div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px">
+          <button class="btn secondary" id="guestCancel">Cancel</button>
+          <button class="btn" id="guestSave">${isEdit ? 'Save' : 'Add'}</button>
+        </div>
+      </div>
+    </div>
+  `);
+  document.getElementById('guestCancel').onclick = closeModal;
+  document.getElementById('guestSave').onclick = ()=>{
+    const name = document.getElementById('guest_name').value.trim();
+    const phone = document.getElementById('guest_phone').value.trim();
+    const email = document.getElementById('guest_email').value.trim();
+    const notes = document.getElementById('guest_notes').value.trim();
+    if(!name) return alert('Name required');
+    const list = getGuests();
+    if(isEdit){
+      Object.assign(g, {name,phone,email,notes});
+      saveGuests(list);
+    } else {
+      const id = uid('g');
+      list.push({id,name,phone,email,notes});
+      saveGuests(list);
+    }
+    closeModal();
+  }
+}
+
+// ---- Reservation editor
+function openReservationEditor(r){
+  const isEdit = !!r;
+  const rooms = getRooms();
+  const guests = getGuests();
+  openModal(`
+    <div style="background:var(--card);padding:18px;border-radius:12px;max-height:85vh;overflow:auto">
+      <h3>${isEdit ? 'Edit' : 'New'} reservation</h3>
+      <div style="display:grid;gap:8px;margin-top:8px">
+        <div style="display:flex;gap:8px"><div style="flex:1"><label>Room</label>
+          <select id="res_room">${rooms.map(x=>`<option value="${x.id}" ${r && r.roomId===x.id ? 'selected':''}>${x.id} — ${x.type} (£${x.rate})</option>`).join('')}</select>
+        </div>
+        <div style="flex:1"><label>Guest</label>
+          <select id="res_guest">${guests.map(x=>`<option value="${x.id}" ${r && r.guestId===x.id ? 'selected':''}>${x.name}</option>`).join('')}</select>
+        </div></div>
+
+        <div style="display:flex;gap:8px"><div style="flex:1"><label>From</label><input id="res_from" type="date" value="${r ? r.from : ''}"></div>
+        <div style="flex:1"><label>To</label><input id="res_to" type="date" value="${r ? r.to : ''}"></div></div>
+
+        <div style="display:flex;gap:8px"><div style="flex:1"><label>Price (£)</label><input id="res_price" type="number" value="${r ? r.price : ''}"></div>
+        <div style="flex:1"><label>Status</label><select id="res_status">
+          <option value="reserved">reserved</option>
+          <option value="checked-in">checked-in</option>
+          <option value="checked-out">checked-out</option>
+          <option value="cancelled">cancelled</option>
+        </select></div></div>
+
+        <div><label>Notes</label><textarea id="res_notes" rows="3">${r ? escapeHtml(r.notes) : ''}</textarea></div>
+
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px">
+          <button class="btn secondary" id="resCancel">Cancel</button>
+          <button class="btn" id="resSave">${isEdit ? 'Save' : 'Create'}</button>
+        </div>
+      </div>
+    </div>
+  `);
+
+  if(r) document.getElementById('res_status').value = r.status;
+
+  document.getElementById('resCancel').onclick = closeModal;
+  document.getElementById('resSave').onclick = ()=>{
+    const roomId = document.getElementById('res_room').value;
+    const guestId = document.getElementById('res_guest').value;
+    const from = document.getElementById('res_from').value;
+    const to = document.getElementById('res_to').value;
+    const price = Number(document.getElementById('res_price').value) || 0;
+    const status = document.getElementById('res_status').value;
+    const notes = document.getElementById('res_notes').value.trim();
+
+    if(!roomId || !guestId || !from || !to) return alert('Room, Guest, From and To required');
+    if(new Date(from) > new Date(to)) return alert('From must be before To');
+
+    // check overlapping reserved/checked-in for same room when creating new and status is reserved/checked-in
+    const reservations = getReservations();
+    if(!isEdit){
+      const conflict = reservations.find(rr=>{
+        if(rr.roomId !== roomId) return false;
+        if(rr.status === 'cancelled' || rr.status === 'checked-out') return false;
+        // overlap
+        return !(new Date(to) < new Date(rr.from) || new Date(from) > new Date(rr.to));
+      });
+      if(conflict && (status === 'reserved' || status === 'checked-in')) {
+        if(!confirm('Room already has a reservation overlapping this period. Create anyway?')) return;
+      }
+      const newRes = {id: uid('r'), roomId, guestId, from, to, price, status, paid:false, notes};
+      reservations.push(newRes);
+      saveReservations(reservations);
+      closeModal();
+    } else {
+      Object.assign(r, {roomId, guestId, from, to, price, status, notes});
+      saveReservations(reservations);
+      closeModal();
+    }
+  }
+}
+
+// ---- Quick add reservation (from left quick action)
+function openReservationQuick(){
+  const rooms = getRooms();
+  const guests = getGuests();
+  if(rooms.length===0) return alert('No rooms configured. Add rooms first.');
+  if(guests.length===0) return alert('No guests. Add a guest first.');
+  openReservationEditor(null);
+}
+
+// ---- Check-in flow
+function handleCheckIn(resId){
+  const reservations = getReservations();
+  const r = reservations.find(x=>x.id===resId);
+  if(!r) return alert('Reservation not found');
+  if(r.status === 'checked-in') return alert('Already checked-in');
+  if(!confirm(`Mark reservation ${r.id} as checked-in?`)) return;
+  r.status = 'checked-in';
+  r.paid = false; // still unpaid by default
+  saveReservations(reservations);
+  alert('Checked in');
+}
+
+// ---- Cancel
+function handleCancel(resId){
+  const reservations = getReservations();
+  const r = reservations.find(x=>x.id===resId);
+  if(!r) return;
+  if(!confirm(`Cancel reservation ${r.id}?`)) return;
+  r.status = 'cancelled';
+  saveReservations(reservations);
+}
+
+// ---- Utility safe-escape
+function escapeHtml(s=''){ return String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])) }
+
+// ---- Filters controls
+document.getElementById('applyFilters').onclick = ()=>{
+  const q = document.getElementById('q').value.trim();
+  const from = document.getElementById('fromDate').value;
+  const to = document.getElementById('toDate').value;
+  const status = document.getElementById('statusFilter').value;
+  renderReservations({q: q || null, from: from || null, to: to || null, status: status || null});
+}
+document.getElementById('resetFilters').onclick = ()=>{
+  document.getElementById('q').value='';document.getElementById('fromDate').value='';document.getElementById('toDate').value='';document.getElementById('statusFilter').value='';
+  renderReservations();
+}
+
+// ---- Export / Import
+document.getElementById('exportBtn').onclick = ()=>{
+  const data = {rooms:getRooms(), reservations:getReservations(), guests:getGuests(), exportedAt: new Date().toISOString()};
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'hotel-pms-export.json'; a.click();
+  URL.revokeObjectURL(url);
+}
+document.getElementById('importBtn').onclick = ()=> document.getElementById('importFile').click();
+document.getElementById('importFile').addEventListener('change', (e)=>{
+  const f = e.target.files[0];
+  if(!f) return;
+  const reader = new FileReader();
+  reader.onload = ()=> {
+    try{
+      const obj = JSON.parse(reader.result);
+      if(confirm('Importing will overwrite current data. Continue?')){
+        saveRooms(obj.rooms||[]);
+        saveReservations(obj.reservations||[]);
+        saveGuests(obj.guests||[]);
+        alert('Import complete');
+      }
+    }catch(err){ alert('Invalid JSON') }
+  };
+  reader.readAsText(f);
+});
+
+// ---- Seed / Reset
+document.getElementById('seedBtn').onclick = seedDemo;
+document.getElementById('clearData').onclick = ()=>{
+  if(!confirm('Reset demo: clear all data?')) return;
+  localStorage.removeItem(LS_KEYS.rooms);
+  localStorage.removeItem(LS_KEYS.res);
+  localStorage.removeItem(LS_KEYS.guests);
+  renderAll();
+};
+
+// ---- Open editors from left pane
+document.getElementById('openRoomEditor').onclick = ()=> openRoomEditor(null);
+document.getElementById('openReservation').onclick = openReservationQuick;
+document.getElementById('openGuest').onclick = ()=> openGuestEditor(null);
+
+// ---- Initial render and helper to render all
+function renderAll(){ renderRooms(); renderReservations(); renderGuests(); renderStats(); }
+renderAll();
+
+// ---- ensure basic sample if empty: add a default room
+(function ensureDefaults(){
+  if(getRooms().length===0 && getReservations().length===0 && getGuests().length===0){
+    // create one default room automatically for initial UX but do not seed reservations
+    saveRooms([{id:'101', type:'Single', rate:60, floor:1, features:['Free WiFi']}]);
+  }
+})();
+
+// ---- Double click a room to prefill creation of reservation (optional small UX)
+document.getElementById('roomsList').addEventListener('dblclick', (e)=>{
+  // find clicked room card
+  const card = e.target.closest('.room-card');
+  if(!card) return;
+  const idText = card.querySelector('.room-meta div div') ? null : null;
+});
+
+// ---- Small keyboard shortcuts
+window.addEventListener('keydown', (e)=>{
+  if(e.ctrlKey && e.key === 'k'){ e.preventDefault(); document.getElementById('q').focus(); }
+});
+
+// ---- End of script
+</script>
+</body>
+</html>
