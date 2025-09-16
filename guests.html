@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+  <meta charset='UTF-8'>
+  <title>Guests</title>
+  <link rel='stylesheet' href='style.css'>
+</head>
+<body>
+  <h1>Guests</h1>
+  <ul id='guestList'></ul>
+<script>
+async function loadGuests() {
+  const res = await fetch('data/guests.json');
+  const guests = await res.json();
+  document.getElementById('guestList').innerHTML =
+    guests.map(g => `<li>${g.name} - ${g.email} - ${g.phone}</li>`).join('');
+}
+loadGuests();
+</script>
+</body>
+</html>

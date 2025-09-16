@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+  <meta charset='UTF-8'>
+  <title>Rooms</title>
+  <link rel='stylesheet' href='style.css'>
+</head>
+<body>
+  <h1>Rooms</h1>
+  <ul id='roomList'></ul>
+<script>
+async function loadRooms() {
+  const res = await fetch('data/rooms.json');
+  const rooms = await res.json();
+  document.getElementById('roomList').innerHTML =
+    rooms.map(r => `<li>${r.name} - ${r.type} - £${r.price}</li>`).join('');
+}
+loadRooms();
+</script>
+</body>
+</html>

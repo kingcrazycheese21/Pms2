@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+  <meta charset='UTF-8'>
+  <title>Bookings</title>
+  <link rel='stylesheet' href='style.css'>
+</head>
+<body>
+  <h1>Bookings</h1>
+  <ul id='bookingList'></ul>
+<script>
+async function loadBookings() {
+  const res = await fetch('data/bookings.json');
+  const bookings = await res.json();
+  document.getElementById('bookingList').innerHTML =
+    bookings.map(b => `<li>${b.guest} booked ${b.room} from ${b.checkin} to ${b.checkout}</li>`).join('');
+}
+loadBookings();
+</script>
+</body>
+</html>
