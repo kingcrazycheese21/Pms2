@@ -21,6 +21,39 @@
     </table>
   </div>
 
+<div class="max-w-md bg-white shadow-md rounded-lg p-6">
+  <h2 class="text-xl font-bold mb-4">Add Room</h2>
+  <form id="roomForm" class="space-y-3">
+    <input type="text" id="name" placeholder="Room Name" class="w-full border rounded p-2" required>
+    <input type="text" id="type" placeholder="Type" class="w-full border rounded p-2" required>
+    <input type="number" id="price" placeholder="Price" class="w-full border rounded p-2" required>
+    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Add Room</button>
+  </form>
+</div>
+
+<script>
+const API = "https://api.yourhotel.com"; // replace later with your backend
+
+document.getElementById("roomForm").onsubmit = async e => {
+  e.preventDefault();
+  const room = {
+    name: document.getElementById("name").value,
+    type: document.getElementById("type").value,
+    price: document.getElementById("price").value
+  };
+  
+  // Save to backend
+  await fetch(API + "/rooms", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(room)
+  });
+
+  alert("Room added successfully!");
+};
+</script>
+  
+
 <script>
 async function loadRooms() {
   const res = await fetch('rooms.json'); // later replace with API
