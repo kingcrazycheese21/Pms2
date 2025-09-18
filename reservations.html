@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Rooms - Hotel PMS</title>
+  <title>Reservations - Hotel PMS</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 flex">
@@ -24,32 +24,35 @@
   <!-- Main Content -->
   <main class="flex-1 p-6">
 
-    <h2 class="text-xl font-bold mb-4">Rooms</h2>
-    <div class="bg-white shadow rounded-lg p-4">
-      <form class="grid grid-cols-3 gap-4 mb-6">
-        <input type="text" placeholder="Room Number" class="border p-2 rounded">
-        <input type="text" placeholder="Type" class="border p-2 rounded">
-        <input type="number" placeholder="Price" class="border p-2 rounded">
-        <button class="col-span-3 bg-blue-600 text-white py-2 rounded">Add Room</button>
+    <h2 class="text-xl font-bold mb-4">Reservations</h2>
+    <div class="bg-white shadow rounded-lg p-4 mb-6">
+      <form class="grid grid-cols-3 gap-4">
+        <input type="text" placeholder="First Name" class="border p-2 rounded">
+        <input type="text" placeholder="Last Name" class="border p-2 rounded">
+        <input type="text" placeholder="City" class="border p-2 rounded">
+        <button class="col-span-3 bg-blue-600 text-white py-2 rounded">Search</button>
       </form>
+    </div>
+    <div class="bg-white shadow rounded-lg p-4">
       <table class="w-full text-left border">
         <thead class="bg-gray-200">
           <tr>
+            <th class="p-2">Name</th>
+            <th class="p-2">City</th>
             <th class="p-2">Room</th>
-            <th class="p-2">Type</th>
-            <th class="p-2">Price</th>
+            <th class="p-2">Arrival</th>
+            <th class="p-2">Departure</th>
+            <th class="p-2">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr>
+            <td class="p-2">John Smith</td>
+            <td class="p-2">London</td>
             <td class="p-2">101</td>
-            <td class="p-2">Single</td>
-            <td class="p-2">£80</td>
-          </tr>
-          <tr>
-            <td class="p-2">102</td>
-            <td class="p-2">Double</td>
-            <td class="p-2">£120</td>
+            <td class="p-2">2025-09-20</td>
+            <td class="p-2">2025-09-23</td>
+            <td class="p-2"><button class="bg-green-500 text-white px-3 py-1 rounded">Edit</button></td>
           </tr>
         </tbody>
       </table>

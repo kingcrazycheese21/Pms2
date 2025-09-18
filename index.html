@@ -1,17 +1,29 @@
 <!DOCTYPE html>
-<html lang='en'>
+<html lang="en">
 <head>
-  <meta charset='UTF-8'>
-  <title>Hotel PMS - Dashboard</title>
-  <link rel='stylesheet' href='style.css'>
+  <meta charset="UTF-8">
+  <title>Index - Hotel PMS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <h1>Hotel PMS Dashboard</h1>
-  <nav>
-    <a href='rooms.html'>Rooms</a> |
-    <a href='bookings.html'>Bookings</a> |
-    <a href='guests.html'>Guests</a>
-  </nav>
-  <p>This is a static demo. Data comes from JSON files.</p>
+<body class="bg-gray-100 flex">
+
+  <!-- Sidebar -->
+  <aside class="w-64 bg-blue-900 text-white min-h-screen p-4">
+    <h1 class="text-2xl font-bold mb-6">Hotel PMS</h1>
+    <nav>
+      <ul class="space-y-2">
+        <li><a href="index.html" class="block py-2 px-3 hover:bg-blue-700 rounded">Dashboard</a></li>
+        <li><a href="reservations.html" class="block py-2 px-3 hover:bg-blue-700 rounded">Reservations</a></li>
+        <li><a href="guests.html" class="block py-2 px-3 hover:bg-blue-700 rounded">Guests</a></li>
+        <li><a href="rooms.html" class="block py-2 px-3 hover:bg-blue-700 rounded">Rooms</a></li>
+        <li><a href="reports.html" class="block py-2 px-3 hover:bg-blue-700 rounded">Reports</a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 p-6">
+<h2 class='text-xl font-bold mb-4'>Dashboard</h2><p>Welcome to your Hotel PMS.</p>
+  </main>
 </body>
 </html>
