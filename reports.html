@@ -1,38 +1,126 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Reports - Hotel PMS</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports | Hotel PMS</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
-<body class="bg-gray-100 flex">
-
-  <!-- Sidebar -->
-  <aside class="w-64 bg-blue-900 text-white min-h-screen p-4">
-    <h1 class="text-2xl font-bold mb-6">Hotel PMS</h1>
-    <nav>
-      <ul class="space-y-2">
-        <li><a href="index.html" class="block py-2 px-3 hover:bg-blue-700 rounded">Dashboard</a></li>
-        <li><a href="reservations.html" class="block py-2 px-3 hover:bg-blue-700 rounded">Reservations</a></li>
-        <li><a href="guests.html" class="block py-2 px-3 hover:bg-blue-700 rounded">Guests</a></li>
-        <li><a href="rooms.html" class="block py-2 px-3 hover:bg-blue-700 rounded">Rooms</a></li>
-        <li><a href="reports.html" class="block py-2 px-3 hover:bg-blue-700 rounded">Reports</a></li>
-      </ul>
-    </nav>
-  </aside>
-
-  <!-- Main Content -->
-  <main class="flex-1 p-6">
-
-    <h2 class="text-xl font-bold mb-4">Reports</h2>
-    <div class="bg-white shadow rounded-lg p-4">
-      <ul class="list-disc pl-5">
-        <li>Daily Occupancy Report</li>
-        <li>Revenue Report</li>
-        <li>Guest List Report</li>
-      </ul>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2>Hotel PMS</h2>
+            <ul>
+                <li><a href="index.html">Dashboard</a></li>
+                <li><a href="reservations.html">Reservations</a></li>
+                <li><a href="guests.html">Guests</a></li>
+                <li><a href="rooms.html">Rooms</a></li>
+                <li><a href="reports.html" class="active">Reports</a></li>
+                <li><a href="billing.html">billing</a></li>
+            </ul>
+        </div>
+        
+        <div class="main-content">
+            <h1>Reports</h1>
+            
+            <div style="margin-bottom: 20px;">
+                <label for="report-select" style="font-weight: bold; margin-right: 10px;">Select Report:</label>
+                <select id="report-select" onchange="displayReport()" style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                    <option value="guest-in-house">Guest In-House</option>
+                    <option value="vacancy">Vacancy Report</option>
+                    <option value="daily-revenue">Daily Revenue</option>
+                </select>
+            </div>
+            
+            <div id="report-output" style="background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                </div>
+            
+            <div style="margin-top: 20px;">
+                <button onclick="window.print()" style="padding: 10px 20px; background-color: #0d1b38; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    Print Report
+                </button>
+                <button onclick="downloadPDF()" style="padding: 10px 20px; background-color: #555; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    Download as PDF
+                </button>
+            </div>
+        </div>
     </div>
-    
-  </main>
+
+    <script>
+        const reportData = {
+            'guest-in-house': {
+                title: 'Guest In-House Report',
+                headers: ['Room No.', 'Guest Name', 'Check-in Date'],
+                rows: [
+                    ['101', 'John Smith', '2025-09-17'],
+                    ['102', 'Jane Doe', '2025-09-17']
+                ]
+            },
+            'vacancy': {
+                title: 'Vacancy Report',
+                headers: ['Room No.', 'Status', 'Room Type'],
+                rows: [
+                    ['103', 'Vacant', 'Standard'],
+                    ['104', 'Vacant', 'Deluxe'],
+                    ['201', 'Occupied', 'Standard']
+                ]
+            },
+            'daily-revenue': {
+                title: 'Daily Revenue',
+                headers: ['Item', 'Amount (£)'],
+                rows: [
+                    ['Room Charges', '£320'],
+                    ['Room Service', '£55'],
+                    ['Laundry', '£20']
+                ]
+            }
+        };
+
+        function displayReport() {
+            const selectElement = document.getElementById('report-select');
+            const selectedReport = selectElement.value;
+            const data = reportData[selectedReport];
+            const outputDiv = document.getElementById('report-output');
+            
+            let tableHTML = `<h3>${data.title}</h3>`;
+            tableHTML += `<table id="report-table" style="width: 100%; border-collapse: collapse; margin-top: 15px;"><thead><tr>`;
+            data.headers.forEach(header => {
+                tableHTML += `<th style="padding: 10px; border: 1px solid #ddd; text-align: left;">${header}</th>`;
+            });
+            tableHTML += `</tr></thead><tbody>`;
+            data.rows.forEach(row => {
+                tableHTML += `<tr>`;
+                row.forEach(cell => {
+                    tableHTML += `<td style="padding: 10px; border: 1px solid #ddd;">${cell}</td>`;
+                });
+                tableHTML += `</tr>`;
+            });
+            tableHTML += `</tbody></table>`;
+            
+            outputDiv.innerHTML = tableHTML;
+        }
+
+        // The new function to generate and download the PDF
+        function downloadPDF() {
+            const doc = new window.jspdf.jsPDF();
+            const element = document.getElementById('report-output');
+            
+            // This method converts the HTML content into a PDF
+            doc.html(element, {
+                callback: function(doc) {
+                    const selectElement = document.getElementById('report-select');
+                    const fileName = selectElement.value.replace('-', '_') + '_report.pdf';
+                    doc.save(fileName);
+                },
+                x: 15,
+                y: 15,
+                windowWidth: 700,
+                html2canvas: { scale: 0.8 },
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', displayReport);
+    </script>
 </body>
 </html>
