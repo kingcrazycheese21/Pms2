@@ -23,7 +23,7 @@
 
 <script>
 async function loadRooms() {
-  const res = await fetch('data/rooms.json'); // later replace with API
+  const res = await fetch('rooms.json'); // later replace with API
   const rooms = await res.json();
   document.getElementById('roomList').innerHTML =
     rooms.map(r => `
