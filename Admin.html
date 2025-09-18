@@ -1,1 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 40px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .login-container h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+        .login-container label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .login-container input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .login-container button {
+            width: 100%;
+            padding: 12px;
+            background-color: #0d1b38;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body style="background-color: #f0f2f5;">
+    <div class="login-container">
+        <h1>Admin Login</h1>
+        <form onsubmit="event.preventDefault(); handleAdminLogin();">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required>
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required>
+            <button type="submit">Log In</button>
+        </form>
+    </div>
 
+    <script>
+        function handleAdminLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            // This is a simple, non-secure check for demonstration purposes.
+            // A real application would verify credentials against a database.
+            if (username === 'admin' && password === 'admin123') {
+                window.location.href = 'admin-dashboard.html';
+            } else {
+                alert('Invalid username or password.');
+            }
+        }
+    </script>
+</body>
+</html>
