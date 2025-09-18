@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Settings | Admin Panel</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2>Admin Panel</h2>
+            <ul>
+                <li><a href="admin-dashboard.html">Dashboard</a></li>
+                <li><a href="user-management.html">User Management</a></li>
+                <li><a href="system-settings.html" class="active">System Settings</a></li>
+                <li><a href="index.html" style="margin-top: 20px;">Return to Main Site</a></li>
+            </ul>
+        </div>
+        
+        <div class="main-content">
+            <h1>System Settings</h1>
+            <p>Configure general settings for the entire Hotel PMS.</p>
+            
+            <form style="background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <div style="margin-bottom: 15px;">
+                    <label for="hotel-name" style="display: block; font-weight: bold; margin-bottom: 5px;">Hotel Name</label>
+                    <input type="text" id="hotel-name" value="Hotel PMS" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label for="currency" style="display: block; font-weight: bold; margin-bottom: 5px;">Default Currency</label>
+                    <input type="text" id="currency" value="£ (GBP)" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label for="checkin-time" style="display: block; font-weight: bold; margin-bottom: 5px;">Default Check-in Time</label>
+                    <input type="time" id="checkin-time" value="15:00" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label for="checkout-time" style="display: block; font-weight: bold; margin-bottom: 5px;">Default Check-out Time</label>
+                    <input type="time" id="checkout-time" value="11:00" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+                
+                <button type="submit" style="width: 100%; padding: 12px; background-color: #0d1b38; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer;">
+                    Update Settings
+                </button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
